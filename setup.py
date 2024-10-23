@@ -58,6 +58,7 @@ setup(
         "compress_json",
         "cache_decorator",
         "typeguard",
+        "rich"
     ],
     extras_require=extras,
     entry_points={
