@@ -335,28 +335,56 @@ class Info:
         return {
             "author": self.author,
             "has_author_email": self.has_author_email(user_agent),
-            "bugtrack_url": is_valid_url(self.bugtrack_url, user_agent),
+            "bugtrack_url": (
+                is_valid_url(self.bugtrack_url, user_agent)
+                if self.bugtrack_url is not None
+                else None
+            ),
             "classifiers": self.classifiers,
             "description": self.description,
             "description_content_type": self.description_content_type,
-            "docs_url": is_valid_url(self.docs_url, user_agent),
-            "download_url": is_valid_url(self.download_url, user_agent),
+            "docs_url": (
+                is_valid_url(self.docs_url, user_agent)
+                if self.docs_url is not None
+                else None
+            ),
+            "download_url": (
+                is_valid_url(self.download_url, user_agent)
+                if self.download_url is not None
+                else None
+            ),
             "dynamic": self.dynamic,
-            "home_page": is_valid_url(self.home_page, user_agent),
+            "home_page": (
+                is_valid_url(self.home_page, user_agent)
+                if self.home_page is not None
+                else None
+            ),
             "keywords": self.keywords,
             "package_license": self.sanitized_package_license,
             "maintainer": self.maintainer,
             "has_maintainer_email": self.has_maintainer_email(user_agent),
             "name": self.name,
-            "package_url": is_valid_url(self.package_url, user_agent),
+            "package_url": (
+                is_valid_url(self.package_url, user_agent)
+                if self.package_url is not None
+                else None
+            ),
             "platform": self.platform,
-            "project_url": is_valid_url(self.project_url, user_agent),
+            "project_url": (
+                is_valid_url(self.project_url, user_agent)
+                if self.project_url is not None
+                else None
+            ),
             "project_urls": {
-                key: is_valid_url(url, user_agent)
+                key: is_valid_url(url, user_agent) if url is not None else None
                 for key, url in (self.project_urls or {}).items()
             },
             "provides_extra": self.provides_extra,
-            "release_url": is_valid_url(self.release_url, user_agent),
+            "release_url": (
+                is_valid_url(self.release_url, user_agent)
+                if self.release_url is not None
+                else None
+            ),
             "requires_dist": self.requires_dist,
             "requires_python": self.requires_python,
             "summary": self.summary,
