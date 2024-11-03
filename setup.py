@@ -62,6 +62,7 @@ setup(
         "compress_json>=1.1.1",
         "cache_decorator",
         "requests",
+        "beautifulsoup4",
         "typeguard",
         "rich",
     ],
