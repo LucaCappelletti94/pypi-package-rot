@@ -63,7 +63,7 @@ class ReleaseInfo:
     @property
     def parsed_upload_time(self) -> Optional[datetime]:
         """Get the upload time."""
-        return datetime.fromisoformat(self.upload_time_iso_8601)
+        return datetime.fromisoformat(self.upload_time_iso_8601.replace("Z", "+00:00"))
 
     def to_dict(self, user_agent: str) -> Dict[str, Any]:
         """Return release information."""
