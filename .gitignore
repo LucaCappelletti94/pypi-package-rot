@@ -163,3 +163,4 @@ cython_debug/
 cache
 *.partial.csv
 pypi.rot.v1.csv
+pypi.rot.v1.full.json
