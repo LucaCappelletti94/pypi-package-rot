@@ -112,7 +112,9 @@ def perpetual_builder(namespace: Namespace):
 
             if time() - last_outputted > 60:
                 if namespace.output.endswith(".json"):
-                    compress_json.dump(project_features, f"{namespace.output}.partial.json")
+                    compress_json.dump(
+                        project_features, f"{namespace.output}.partial.json"
+                    )
                 elif namespace.output.endswith(".csv"):
                     df = pd.DataFrame(project_features)
                     df.to_csv(f"{namespace.output}.partial.csv", index=False)
