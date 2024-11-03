@@ -58,12 +58,7 @@ setup(
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
     tests_require=test_deps,
     python_requires=">=3.9",
-    install_requires=[
-        "compress_json>=1.1.1",
-        "cache_decorator",
-        "typeguard",
-        "rich"
-    ],
+    install_requires=["compress_json>=1.1.1", "cache_decorator", "typeguard", "rich"],
     extras_require=extras,
     entry_points={
         "console_scripts": [
