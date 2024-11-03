@@ -2,6 +2,7 @@
 
 [![PyPI](https://badge.fury.io/py/pypi-package-rot.svg)](https://badge.fury.io/py/pypi-package-rot)
 [![Downloads](https://pepy.tech/badge/pypi-package-rot)](https://pepy.tech/badge/pypi-package-rot)
+![Scraped packages](https://img.shields.io/badge/Scraped%20packages-209370%20of%20581461-blue)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/LucaCappelletti94/pypi-package-rot/blob/master/LICENSE)
 [![CI](https://github.com/LucaCappelletti94/pypi-package-rot/actions/workflows/python.yml/badge.svg)](https://github.com/LucaCappelletti94/pypi-package-rot/actions)
 
