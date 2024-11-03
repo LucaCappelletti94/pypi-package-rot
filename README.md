@@ -1,6 +1,9 @@
 # PyPI package rot
 
-!
+[![PyPI](https://badge.fury.io/py/pypi-package-rot.svg)](https://badge.fury.io/py/pypi-package-rot)
+[![Downloads](https://pepy.tech/badge/pypi-package-rot)](https://pepy.tech/badge/pypi-package-rot)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/LucaCappelletti94/pypi_package_rot/blob/master/LICENSE)
+[![CI](https://github.com/LucaCappelletti94/pypi_package_rot/actions/workflows/python.yml/badge.svg)](https://github.com/LucaCappelletti94/pypi_package_rot/actions)
 
 Investigating the state of package rot on PyPI.
 
