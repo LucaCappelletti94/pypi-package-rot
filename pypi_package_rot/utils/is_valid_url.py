@@ -4,8 +4,10 @@ from typing import List, Dict, Any
 import re
 from time import time, sleep
 from urllib.parse import urlparse
-from urllib3.exceptions import LocationParseError
-from urllib3.exceptions import InsecureRequestWarning
+from urllib3.exceptions import (
+    LocationParseError,
+    InsecureRequestWarning,
+)
 from urllib3 import disable_warnings
 import requests
 import compress_json
@@ -81,7 +83,7 @@ def is_valid_url(url: str, user_agent: str) -> Dict[str, Any]:
             "status": response.status_code,
             "url": url,
         }
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, LocationParseError):
         return {
             "valid": False,
             "status": None,

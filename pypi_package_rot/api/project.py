@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Any, Iterable
+from datetime import datetime, timezone
 from typeguard import typechecked
 import requests
 import compress_json
-from datetime import datetime, timezone
 from cache_decorator import Cache
 from pypi_package_rot.api.constants import auto_sleep
 from pypi_package_rot.utils import is_valid_email
@@ -65,6 +65,24 @@ class ReleaseInfo:
         """Get the upload time."""
         return datetime.fromisoformat(self.upload_time_iso_8601)
 
+    def to_dict(self, user_agent: str) -> Dict[str, Any]:
+        """Return release information."""
+        return {
+            "comment_text": self.comment_text,
+            "filename": self.filename,
+            "has_sig": self.has_sig,
+            "md5_digest": self.md5_digest,
+            "packagetype": self.packagetype,
+            "python_version": self.python_version,
+            "requires_python": self.requires_python,
+            "size": self.size,
+            "upload_time": self.upload_time,
+            "upload_time_iso_8601": self.upload_time_iso_8601,
+            "url": is_valid_url(self.url, user_agent),
+            "yanked": self.yanked,
+            "yanked_reason": self.yanked_reason,
+        }
+
     @classmethod
     @typechecked
     def from_dict(cls, data: Dict) -> "ReleaseInfo":
@@ -122,23 +140,72 @@ class Releases:
         )[0]
 
     @property
+    def first_release(self) -> Optional[ReleaseInfo]:
+        """Get the first release."""
+        if not self.versions:
+            return None
+
+        # If all of the versions are empty, we return None.
+        if all(len(releases) == 0 for releases in self.versions.values()):
+            return None
+
+        # We sort the releases by the ISO 8601 date and return the most recent one.
+        return sorted(
+            [release for releases in self.versions.values() for release in releases],
+            key=lambda release: release.parsed_upload_time,
+            reverse=False,
+        )[0]
+
+    @property
     def parsed_upload_time(self) -> Optional[datetime]:
         """Get the upload time."""
         last_release: Optional[ReleaseInfo] = self.last_release
         return last_release.parsed_upload_time if last_release else None
 
+    @property
+    # pylint: disable=invalid-name
+    def last_release_ISO_8601(self) -> Optional[str]:
+        """Get the last release."""
+        last_release: Optional[ReleaseInfo] = self.last_release
+        return last_release.upload_time_iso_8601 if last_release else None
+
+    @property
+    # pylint: disable=invalid-name
+    def first_release_ISO_8601(self) -> Optional[str]:
+        """Get the first release."""
+        first_release: Optional[ReleaseInfo] = self.first_release
+        return first_release.upload_time_iso_8601 if first_release else None
+
+    @property
+    def last_release_size(self) -> Optional[int]:
+        """Get the size of the last release."""
+        last_release: Optional[ReleaseInfo] = self.last_release
+        return last_release.size if last_release else None
+
+    @property
+    def first_release_size(self) -> Optional[int]:
+        """Get the size of the first release."""
+        first_release: Optional[ReleaseInfo] = self.first_release
+        return first_release.size if first_release else None
+
+    def to_dict(self, user_agent: str) -> Dict[str, Any]:
+        """Return releases."""
+        return {
+            version: [release.to_dict(user_agent) for release in releases]
+            for version, releases in self.versions.items()
+        }
+
     def to_anonymized_dict(self) -> Dict[str, Any]:
         """Returns an anonymized dictionary with the project information."""
-        last_release: Optional[ReleaseInfo] = self.last_release
         return {
             "number_of_releases": sum(
                 len(releases) for releases in self.versions.values()
             ),
             "number_of_versions": len(self.versions),
-            "last_release_ISO_8601": (
-                self.last_release.upload_time_iso_8601 if last_release else None
-            ),
-            "last_release_size": last_release.size if last_release else None,
+            "last_release_ISO_8601": self.last_release_ISO_8601,
+            "last_release_size": self.last_release_size,
+            "first_release_ISO_8601": self.first_release_ISO_8601,
+            "first_release_size": self.first_release_size,
         }
 
 
@@ -157,7 +224,7 @@ class Info:
     dynamic: Optional[str]
     home_page: str
     keywords: Optional[str]
-    package_license: str
+    package_license: Optional[str]
     maintainer: Optional[str]
     maintainer_email: Optional[str]
     name: str
@@ -254,6 +321,50 @@ class Info:
             or self.number_of_working_urls(user_agent) < 2
         ) and (len(self.description) < 100 and self.summary_length < 10)
 
+    @property
+    def sanitized_package_license(self) -> Optional[str]:
+        """Get the sanitized package license."""
+        if self.package_license is None:
+            return None
+        if len(self.package_license) > 100:
+            return "CUSTOM LICENSE"
+        return self.package_license
+
+    def to_dict(self, user_agent: str) -> Dict[str, Any]:
+        """Return project information."""
+        return {
+            "author": self.author,
+            "has_author_email": self.has_author_email(user_agent),
+            "bugtrack_url": is_valid_url(self.bugtrack_url, user_agent),
+            "classifiers": self.classifiers,
+            "description": self.description,
+            "description_content_type": self.description_content_type,
+            "docs_url": is_valid_url(self.docs_url, user_agent),
+            "download_url": is_valid_url(self.download_url, user_agent),
+            "dynamic": self.dynamic,
+            "home_page": is_valid_url(self.home_page, user_agent),
+            "keywords": self.keywords,
+            "package_license": self.sanitized_package_license,
+            "maintainer": self.maintainer,
+            "has_maintainer_email": self.has_maintainer_email(user_agent),
+            "name": self.name,
+            "package_url": is_valid_url(self.package_url, user_agent),
+            "platform": self.platform,
+            "project_url": is_valid_url(self.project_url, user_agent),
+            "project_urls": {
+                key: is_valid_url(url, user_agent)
+                for key, url in (self.project_urls or {}).items()
+            },
+            "provides_extra": self.provides_extra,
+            "release_url": is_valid_url(self.release_url, user_agent),
+            "requires_dist": self.requires_dist,
+            "requires_python": self.requires_python,
+            "summary": self.summary,
+            "version": self.version,
+            "yanked": self.yanked,
+            "yanked_reason": self.yanked_reason,
+        }
+
     @typechecked
     def to_anonymized_dict(self, user_agent: str) -> Dict[str, Any]:
         """Returns an anonymized dictionary with the project information."""
@@ -265,7 +376,8 @@ class Info:
             "number_of_working_urls": self.number_of_working_urls(user_agent),
             "home_page": self.has_home_page(user_agent),
             "yanked": self.yanked,
-            "package_license": self.package_license,
+            "package_license": self.sanitized_package_license,
+            "classifiers": ", ".join(self.classifiers),
         }
 
     @classmethod
@@ -330,12 +442,17 @@ class Project:
         if self.is_dead():
             return True
 
+        if self.info is None:
+            raise NotImplementedError("This should not happen.")
+
         return self.info.seems_dead(user_agent) and self.older_than_one_year
 
     def should_be_terminated(self, user_agent: str) -> bool:
         """Determines whether the project should be yanked."""
         if self.is_dead():
             return True
+        if self.info is None:
+            raise NotImplementedError("This should not happen.")
         if self.seems_dead(user_agent) and not self.info.has_any_email(user_agent):
             return True
         return False
@@ -385,3 +502,12 @@ class Project:
     def from_project_name(cls, project_name: str, user_agent: str) -> "Project":
         """Get project information."""
         return cls.from_dict(_get_project(project_name, user_agent))
+
+    def to_dict(self, user_agent: str) -> Dict[str, Any]:
+        """Return project information."""
+        return {
+            "info": self.info.to_dict(user_agent) if self.info is not None else None,
+            "status": self.status,
+            "project_name": self.project_name,
+            "releases": self.releases.to_dict(user_agent),
+        }

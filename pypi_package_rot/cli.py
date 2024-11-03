@@ -4,7 +4,11 @@ from argparse import Namespace, ArgumentParser
 from typing import Any, Dict, List
 from time import time
 from tqdm.auto import tqdm
+import compress_json
 import pandas as pd
+from rich.console import Console
+from rich.table import Table
+from humanize import precisedelta
 from pypi_package_rot.api import (
     retrieve_all_package_names,
     Project,
@@ -12,9 +16,6 @@ from pypi_package_rot.api import (
     get_number_of_available_projects,
 )
 
-from rich.console import Console
-from rich.table import Table
-from humanize import precisedelta
 
 from pypi_package_rot.__version__ import __version__
 
@@ -52,7 +53,7 @@ def perpetual_builder(namespace: Namespace):
     while True:
         last_outputted: float = time()
         project_features: List[Dict[str, Any]] = []
-        time_elapsed: float = 0
+        operation_start_time: float = time()
         time_remaining: float = 0
         number_of_cached_projects: int = 0
         metadata: Dict[str, Any] = {
@@ -65,10 +66,14 @@ def perpetual_builder(namespace: Namespace):
 
         # We display the table using rich
         console = Console()
+        last_printed = time()
 
         for project in get_available_projects():
             start = time()
-            project_features.append(project.to_anonymized_dict(user_agent))
+            if not namespace.full:
+                project_features.append(project.to_anonymized_dict(user_agent))
+            else:
+                project_features.append(project.to_dict(user_agent))
             metadata["Parsed projects"] += 1
             if project.is_dead():
                 metadata["Dead projects"] += 1
@@ -82,7 +87,7 @@ def perpetual_builder(namespace: Namespace):
             if time_required < 0.1:
                 number_of_cached_projects += 1
 
-            time_elapsed = time() - last_outputted
+            time_elapsed = time() - operation_start_time
             if metadata["Parsed projects"] - number_of_cached_projects > 0:
                 time_remaining = (
                     time_elapsed
@@ -90,11 +95,12 @@ def perpetual_builder(namespace: Namespace):
                     * (metadata["Projects to parse"] - metadata["Parsed projects"])
                 )
 
-            metadata["Time elapsed"] = precisedelta(time_elapsed)
-            metadata["Time remaining"] = precisedelta(time_remaining)
+            metadata["Time elapsed"] = precisedelta(int(time_elapsed))
+            metadata["Time remaining"] = precisedelta(int(time_remaining))
 
-            if namespace.verbose:
+            if namespace.verbose and time() - last_printed > 1:
                 # We display the table using rich
+                last_printed = time()
                 table = Table(title="Project metadata")
                 table.add_column("Metadata")
                 table.add_column("Value")
@@ -105,8 +111,13 @@ def perpetual_builder(namespace: Namespace):
                 console.print(table)
 
             if time() - last_outputted > 60:
-                df = pd.DataFrame(project_features)
-                df.to_csv(f"{namespace.output}.partial.csv", index=False)
+                if namespace.output.endswith(".json"):
+                    compress_json.dump(project_features, namespace.output)
+                elif namespace.output.endswith(".csv"):
+                    df = pd.DataFrame(project_features)
+                    df.to_csv(f"{namespace.output}.partial.csv", index=False)
+                else:
+                    raise ValueError("Output file must be either CSV or JSON.")
                 last_outputted = time()
 
         df.to_csv(namespace.output, index=False)
@@ -118,7 +129,12 @@ def perpetual_builder_parser(parser: ArgumentParser):
         "--output",
         type=str,
         required=True,
-        help="Path to the output CSV file.",
+        help="Path to the output CSV or JSON file.",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Whether to output the full dataset or just the partial one.",
     )
     parser.add_argument(
         "--email",

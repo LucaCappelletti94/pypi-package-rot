@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 cache
 *.partial.csv
+pypi.rot.v1.csv

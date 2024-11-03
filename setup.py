@@ -29,6 +29,10 @@ __version__ = find_version("pypi_package_rot", "__version__.py")
 test_deps = [
     "pytest",
     "pytest-readme",
+    "pandas-stubs",
+    "types-tqdm",
+    "types-requests",
+    "types-beautifulsoup4",
     "validate_version_code",
 ]
 
@@ -47,7 +51,7 @@ setup(
     license="MIT",
     include_package_data=True,
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
     ],
@@ -55,7 +59,7 @@ setup(
     tests_require=test_deps,
     python_requires=">=3.9",
     install_requires=[
-        "compress_json",
+        "compress_json>=1.1.1",
         "cache_decorator",
         "typeguard",
         "rich"

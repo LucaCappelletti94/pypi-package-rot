@@ -1,8 +1,24 @@
 # PyPI package rot
 
-Investigating the state of package rot on PyPI
+Investigating the state of package rot on PyPI.
+
+## Introduction
+
+The objective of this dataset is to provide a screenshot of the state of PyPI packages, so to facilitate investigations on the state of the Python ecosystem. While its first intended goal is to facilitate the identification of package rot, it can be used for other purposes as well.
+
+At this time, we are building the dataset still and we are about 200k packages of 600k. We expect to have the dataset ready by the end of 2024.
+
+## Installing
+
+As usual, you can install the package with pip:
+
+```bash
+pip install pypi-package-rot
+```
 
 ## CLI
+
+The package provides the following CLI utilities to allow you to replicate the dataset. Do keep in mind that this operation will take a long time, as it involves scraping informations from websites that allow about 1 request per second.
 
 ### Perpetual scraper
 
@@ -16,10 +32,24 @@ pypi_package_rot perpetual_scraper --email "your@email.com"
 
 ### Build the dataset
 
-After having downloaded for a while the metadata of the packages, you can build the dataset with the following command:
+After having downloaded for a while the metadata of the packages, you can build the summarized anonymized dataset with the following command:
 
 ```bash
-pypi_package_rot perpetual_builder --verbose --output "pypi.rot.v1.csv"  --email "your@email.com"
+pypi_package_rot perpetual_builder --verbose --output "pypi.rot.v1.summarized.csv"  --email "your@email.com"
 ```
 
-Part of the procedure included testing whether the URLs in the metadata are still valid. This is done by sending a HEAD request to the URL and checking the status code. Such operations may take a long time. As per the previous command, the email is needed to build an adequate user-agent string for the requests, so that websites can contact you if you are abusing their services.
+Alternatively, to include all informations, you can use the following command:
+
+```bash
+pypi_package_rot perpetual_builder --verbose --full --output "pypi.rot.v1.full.json"  --email "your@email.com"
+```
+
+Part of the procedure included testing whether the URLs in the metadata are still valid. This is done by sending a HEAD request to the URL and checking the status code. Such operations may take a long time (about one month at the time of writing). As per the previous command, the email is needed to build an adequate user-agent string for the requests, so that websites can contact you if you are abusing their services.
+
+## Contributing
+
+Do you have some ideas to improve this dataset or associated analysis? Feel free to open an issue or a pull request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
