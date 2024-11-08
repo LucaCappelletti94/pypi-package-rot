@@ -12,7 +12,7 @@ Investigating the state of package rot on PyPI.
 
 The objective of this dataset is to provide a screenshot of the state of PyPI packages, so to facilitate investigations on the state of the Python ecosystem. While its first intended goal is to facilitate the identification of package rot, it can be used for other purposes as well.
 
-**At this time, we are building the dataset still and we are about 240k packages of 600k. We expect to have the dataset ready by the end of 2024.**
+**At this time, we are building the dataset still and we are about 290k packages of 600k. We expect to have the dataset ready by the end of 2024.**
 
 ## Installing
 
